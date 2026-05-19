@@ -1,7 +1,9 @@
 package com.bank.resource;
 
+import com.bank.dto.TransactionEvent;
 import com.bank.dto.TransferRequest;
 import com.bank.dto.TransferResponse;
+import com.bank.service.TransactionProducer;
 import com.bank.service.TransferService;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -20,10 +22,20 @@ public class TransferResource {
     @Inject
     TransferService transferService;
 
+    @Inject
+    TransactionProducer transactionProducer;
+
     @POST
     public Response transfer(@Valid TransferRequest request){
         TransferResponse response = transferService.transfer(request);
 
         return Response.ok(response).build();
+    }
+
+    @POST
+    @Path("/mq")
+    public Response transferMq(@Valid TransactionEvent event){
+        transactionProducer.publish(event);
+        return Response.ok("Published").build();
     }
 }
